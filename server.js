@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -7,48 +8,44 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
-app.get('/', (req,res)=>{
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
-});
 
-// CONNECT TO THE schoolFeesDB in Compass
-mongoose.connect('mongodb+srv://nayad:Nayad124@cluster0.ywhqcei.mongodb.net/bugemaDB?retryWrites=true&w=majority')
-.then(()=> console.log('Connected to schoolFeesDB'))
+mongoose.connect(process.env.MONGO_URI)
+.then(()=> console.log('Connected to: ' + process.env.MONGO_URI))
 .catch(err => console.log(err));
 
-// STUDENT SCHEMA
+// SCHEMAS
 const studentSchema = new mongoose.Schema({
-  name: String,
-  gender: String,
-  email: String,
-  course: String
+  studentId: String, name: String, gender: String, email: String,
+  courseId: String, totalFees: Number,
+  guardian: { name: String, phone: String, relationship: String }
 });
 const Student = mongoose.model('students', studentSchema);
 
-// CRUD APIS
-// READ - Get all students
-app.get('/api/students', async (req,res)=>{
-  const students = await Student.find();
-  res.json(students);
+const courseSchema = new mongoose.Schema({
+  courseId: String, courseName: String, durationMonths: Number, feePerTerm: Number, teacherId: String
 });
+const Course = mongoose.model('courses', courseSchema);
 
-// CREATE - Add student
-app.post('/api/students', async (req,res)=>{
-  const newStudent = new Student(req.body);
-  await newStudent.save();
-  res.json(newStudent);
+const paymentSchema = new mongoose.Schema({
+  paymentId: String, studentId: String, amount: Number, date: String, method: String, receiptNo: String
 });
+const Payment = mongoose.model('payments', paymentSchema);
 
-// UPDATE - Edit student
-app.put('/api/students/:id', async (req,res)=>{
-  const updated = await Student.findByIdAndUpdate(req.params.id, req.body, {new:true});
-  res.json(updated);
+const teacherSchema = new mongoose.Schema({
+  teacherId: String, name: String, email: String, subject: String, phone: String
 });
+const Teacher = mongoose.model('teachers', teacherSchema);
 
-// DELETE
-app.delete('/api/students/:id', async (req,res)=>{
-  await Student.findByIdAndDelete(req.params.id);
-  res.json({message: 'Deleted'});
-});
+function makeCRUD(model, name) {
+  app.get(`/api/${name}`, async (req,res)=>{ res.json(await model.find()); });
+  app.post(`/api/${name}`, async (req,res)=>{ const doc = new model(req.body); await doc.save(); res.json(doc); });
+  app.put(`/api/${name}/:id`, async (req,res)=>{ res.json(await model.findByIdAndUpdate(req.params.id, req.body, {new:true})); });
+  app.delete(`/api/${name}/:id`, async (req,res)=>{ await model.findByIdAndDelete(req.params.id); res.json({message: 'Deleted'}); });
+}
+makeCRUD(Student, 'students');
+makeCRUD(Course, 'courses');
+makeCRUD(Payment, 'payments');
+makeCRUD(Teacher, 'teachers');
 
-app.listen(3000, ()=> console.log('Server running on http://localhost:3000'));
+app.get('/', (req,res)=>{ res.sendFile(path.join(__dirname, 'frontend', 'index.html')); });
+app.listen(process.env.PORT, ()=> console.log('Server running on http://localhost:'+process.env.PORT));
