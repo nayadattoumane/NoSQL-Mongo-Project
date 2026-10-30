@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head><title>School Fees System</title>
+<style>body{font-family:Arial; padding:20px} input,button{padding:8px; margin:5px} table{width:100%; margin-top:20px; border-collapse:collapse} td,th{border:1px solid #ccc; padding:8px}</style>
+</head>
+<body>
+<h2>School Fees System - Students (schoolFeesDB)</h2>
+<input id="nameInput" placeholder="Name">
+<input id="genderInput" placeholder="Gender">
+<input id="emailInput" placeholder="Email">
+<button onclick="addStudent()">Add Student</button>
+
+<table id="table"><tr><th>Name</th><th>Gender</th><th>Email</th><th>Action</th></tr></table>
+
+<script>
+const API = 'http://localhost:3000/api/students';
+async function load(){ 
+  const res = await fetch(API); const data = await res.json();
+  const table = document.getElementById('table');
+  table.innerHTML = '<tr><th>Name</th><th>Gender</th><th>Email</th><th>Action</th></tr>';
+  data.forEach(s=>{
+    table.innerHTML += `<tr><td>${s.name}</td><td>${s.gender}</td><td>${s.email}</td><td><button onclick="del('${s._id}')">Delete</button></td></tr>`;
+  });
+}
+async function addStudent(){
+  const name = document.getElementById('nameInput').value;
+  const gender = document.getElementById('genderInput').value;
+  const email = document.getElementById('emailInput').value;
+  if(!name) return alert('Enter name');
+  await fetch(API,{method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name, gender, email})});
+  document.getElementById('nameInput').value=''; 
+  document.getElementById('genderInput').value=''; 
+  document.getElementById('emailInput').value='';
+  load();
+}
+async function del(id){ await fetch(`${API}/${id}`,{method:'DELETE'}); load(); }
+load();
+</script>
+</body>
+</html>
