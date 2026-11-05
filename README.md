@@ -26,7 +26,7 @@ School Fees System based on midsem submission. Manages students, courses, paymen
 
 
 
-Example: S001 Aisha Nakato - C001 Mathematics - P001 700000 Mobile Money
+Example: S002 Nayad Attoumane - C002 English - P002 500000 Bank deposit
 
 
 

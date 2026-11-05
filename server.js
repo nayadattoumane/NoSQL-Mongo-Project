@@ -10,7 +10,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'frontend')));
 
 mongoose.connect(process.env.MONGO_URI)
-.then(()=> console.log('Connected to: ' + process.env.MONGO_URI))
+.then(()=> console.log('Connected to MongoDB'))
 .catch(err => console.log(err));
 
 // SCHEMAS
