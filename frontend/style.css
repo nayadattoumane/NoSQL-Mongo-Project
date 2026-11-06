@@ -1,0 +1,144 @@
+/* ===== WHOLE PAGE ===== */
+
+/* Page background + font for everything */
+body{
+    font-family:Arial;
+    padding:20px;
+    background:#f4f6f9
+}
+
+/* Main title at top - centered, dark blue */
+h1{
+    text-align:center;
+    color:#2c3e50
+}
+
+/* ===== TABS - The 4 buttons at top ===== */
+
+/* Holds the 4 tab buttons in one row, centered, with space between them */
+.tabs{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    margin:20px 0
+}
+
+/* One tab button - grey, rounded, bold text */
+.tab{
+    padding:10px 20px;
+    background:#ddd;
+    border:none;
+    cursor:pointer;
+    border-radius:5px;
+    font-weight:bold
+}
+
+/* The tab that is currently open - turns blue with white text */
+.tab.active{
+    background:#3498db;
+    color:white
+}
+
+/* ===== WHITE CARD - Holds each section ===== */
+
+/* White box with shadow around Students / Courses / etc */
+.container{
+    background:white;
+    padding:20px;
+    border-radius:8px;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1)
+}
+
+/* ===== TABLE - Where data is shown ===== */
+
+/* Table takes full width, no double borders */
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:15px
+}
+
+/* Cells - border, space inside, text to the left */
+th,td{
+    border:1px solid #ddd;
+    padding:8px;
+    text-align:left;
+    font-size:14px
+}
+
+/* Table header row - blue background, white text */
+th{
+    background:#3498db;
+    color:white
+}
+
+/* ===== FORM - Where you type new data ===== */
+
+/* Input area - inputs in a row, wrap to next line if no space, light grey background */
+.form{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin:15px 0;
+    background:#eef2f7;
+    padding:15px;
+    border-radius:5px
+}
+
+/* All text boxes and dropdowns - same look */
+input,select{
+    padding:8px;
+    border:1px solid #ccc;
+    border-radius:4px
+}
+
+/* All buttons - no border, rounded, pointer when you hover */
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:4px;
+    cursor:pointer
+}
+
+/* Add / Update button - green */
+.btn-add{
+    background:#27ae60;
+    color:white
+}
+
+/* Edit button - orange */
+.btn-edit{
+    background:#f39c12;
+    color:white
+}
+
+/* Delete button - red */
+.btn-del{
+    background:#e74c3c;
+    color:white
+}
+
+/* ===== SHOW / HIDE SECTIONS - The tab trick ===== */
+
+/* Hide all sections by default */
+.section{
+    display:none
+}
+
+/* Show only the section that has 'active' - this is what showTab() in JS does */
+.section.active{
+    display:block
+}
+
+/* Error message under form - red text, hidden when empty */
+.error-msg {
+    color: #d32f2f; /* Dark red, easy to read */
+    font-weight: bold; /* Make it stand out */
+    margin-top: 8px; /* Small space above message */
+    min-height: 20px; /* Keep form size stable even when no error */
+}
+
+/* Green success message - same box, just green when it says Saved */
+.error-msg.success {
+    color: #2e7d32; /* Dark green for success */
+}

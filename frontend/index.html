@@ -1,159 +1,175 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE html> <!-- Tells browser this is an HTML5 document -->
+<html> <!-- Start of page -->
 <head>
-<title>School Fees Management System</title>
-<style>
-body{font-family:Arial;padding:20px;background:#f4f6f9}
-h1{text-align:center;color:#2c3e50}
-.tabs{display:flex;gap:10px;justify-content:center;margin:20px 0}
-.tab{padding:10px 20px;background:#ddd;border:none;cursor:pointer;border-radius:5px;font-weight:bold}
-.tab.active{background:#3498db;color:white}
-.container{background:white;padding:20px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1)}
-table{width:100%;border-collapse:collapse;margin-top:15px}
-th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:14px}
-th{background:#3498db;color:white}
-.form{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0;background:#eef2f7;padding:15px;border-radius:5px}
-input,select{padding:8px;border:1px solid #ccc;border-radius:4px}
-button{padding:8px 12px;border:none;border-radius:4px;cursor:pointer}
-.btn-add{background:#27ae60;color:white}
-.btn-edit{background:#f39c12;color:white}
-.btn-del{background:#e74c3c;color:white}
-.section{display:none}
-.section.active{display:block}
-</style>
+    <title>School Fees Management System</title> <!-- Text shown on browser tab -->
+    <!-- Link to CSS file for all styling / colours -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<h1>School Fees Management System - schoolFeesDB</h1>
-<div class="tabs">
-<button class="tab active" onclick="showTab('students')">Students</button>
-<button class="tab" onclick="showTab('courses')">Courses</button>
-<button class="tab" onclick="showTab('payments')">Payments</button>
-<button class="tab" onclick="showTab('teachers')">Teachers</button>
-</div>
+        
+    <!-- Main title at top of page -->
+    <h1>School Fees Management System - schoolFeesDB</h1>
 
-<div id="students" class="section active container">
-<h2>Students - CRUD</h2>
-<div class="form">
-<input id="s_studentId" placeholder="StudentId S001">
-<input id="s_name" placeholder="Name">
-<select id="s_gender"><option>Female</option><option>Male</option></select>
-<input id="s_email" placeholder="Email">
-<input id="s_courseId" placeholder="CourseId C001">
-<input id="s_totalFees" type="number" placeholder="Total Fees">
-<input id="s_guardianName" placeholder="Guardian Name">
-<input id="s_guardianPhone" placeholder="Guardian Phone">
-<button class="btn-add" onclick="addStudent()">Add / Update</button>
-<input type="hidden" id="s_editId">
-</div>
-<table><thead><tr><th>StudentId</th><th>Name</th><th>Gender</th><th>Email</th><th>Course</th><th>TotalFees</th><th>Guardian</th><th>Actions</th></tr></thead><tbody id="studentsTable"></tbody></table>
-</div>
+    <!-- TAB BUTTONS - Click to switch between sections -->
+    <div class="tabs">
+        <!-- Students tab is active when page opens -->
+        <button class="tab active" onclick="showTab('students')">Students</button>
+        <button class="tab" onclick="showTab('courses')">Courses</button>
+        <button class="tab" onclick="showTab('payments')">Payments</button>
+        <button class="tab" onclick="showTab('teachers')">Teachers</button>
+    </div>
 
-<div id="courses" class="section container">
-<h2>Courses - CRUD</h2>
-<div class="form">
-<input id="c_courseId" placeholder="CourseId">
-<input id="c_courseName" placeholder="Course Name">
-<input id="c_durationMonths" type="number" placeholder="Duration Months">
-<input id="c_feePerTerm" type="number" placeholder="Fee Per Term">
-<input id="c_teacherId" placeholder="TeacherId">
-<button class="btn-add" onclick="addCourse()">Add / Update</button>
-<input type="hidden" id="c_editId">
-</div>
-<table><thead><tr><th>CourseId</th><th>Name</th><th>Duration</th><th>Fee/Term</th><th>TeacherId</th><th>Actions</th></tr></thead><tbody id="coursesTable"></tbody></table>
-</div>
+    <!-- ========== STUDENTS SECTION ========== -->
+    <!-- active = this section shows first, others are hidden -->
+    <div id="students" class="section active container">
+        <h2>Students - CRUD</h2>
+        <!-- FORM - Where you type new student -->
+        <div class="form">
+            <input id="s_studentId" placeholder="StudentId S001">
+            <input id="s_name" placeholder="Name">
+            <!-- Dropdown for gender -->
+            <select id="s_gender">
+                <option>Female</option>
+                <option>Male</option>
+            </select>
+            <input id="s_email" placeholder="Email">
+            <input id="s_courseId" placeholder="CourseId C001">
+            <!-- type=number means only numbers allowed -->
+            <input id="s_totalFees" type="number" placeholder="Total Fees">
+            <input id="s_guardianName" placeholder="Guardian Name">
+            <input id="s_guardianPhone" placeholder="Guardian Phone">
+            <!-- One button does both Add and Update -->
+            <button class="btn-add" onclick="addStudent()">Add / Update</button>
+            <!-- NEW: Empty red box for error messages. JS will fill it when duplicate happens. Empty = hidden -->
+            <div id="s_error" class="error-msg"></div>
+            <!-- Hidden box - stores MongoDB _id when editing, empty when adding new -->
+            <input type="hidden" id="s_editId">
+        </div>
+        <!-- TABLE - Where students are shown. tbody is empty, JS fills it -->
+        <table>
+            <thead>
+                <tr>
+                    <th>StudentId</th>
+                    <th>Name</th>
+                    <th>Gender</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th>TotalFees</th>
+                    <th>Guardian</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="studentsTable"></tbody>
+        </table>
+    </div>
 
-<div id="payments" class="section container">
-<h2>Payments - CRUD</h2>
-<div class="form">
-<input id="p_paymentId" placeholder="PaymentId P001">
-<input id="p_studentId" placeholder="StudentId S001">
-<input id="p_amount" type="number" placeholder="Amount">
-<input id="p_date" type="date">
-<select id="p_method"><option>Mobile Money</option><option>Bank</option><option>Cash</option></select>
-<input id="p_receiptNo" placeholder="Receipt R1001">
-<button class="btn-add" onclick="addPayment()">Add / Update</button>
-<input type="hidden" id="p_editId">
-</div>
-<table><thead><tr><th>PaymentId</th><th>StudentId</th><th>Amount</th><th>Date</th><th>Method</th><th>Receipt</th><th>Actions</th></tr></thead><tbody id="paymentsTable"></tbody></table>
-</div>
+    <!-- ========== COURSES SECTION ========== -->
+    <div id="courses" class="section container">
+        <h2>Courses - CRUD</h2>
+        <!-- FORM - Where you type new course -->
+        <div class="form">
+            <input id="c_courseId" placeholder="CourseId">
+            <input id="c_courseName" placeholder="Course Name">
+            <input id="c_durationMonths" type="number" placeholder="Duration Months">
+            <input id="c_feePerTerm" type="number" placeholder="Fee Per Term">
+            <!-- teacherId links this course to a teacher -->
+            <input id="c_teacherId" placeholder="TeacherId">
+            <button class="btn-add" onclick="addCourse()">Add / Update</button>
+            <!-- NEW: Empty red box for course errors -->
+            <div id="c_error" class="error-msg"></div>
+            <!-- Hidden box - stores MongoDB _id when editing -->
+            <input type="hidden" id="c_editId">
+        </div>
+        <!-- TABLE - Courses shown here by JS -->
+        <table>
+            <thead>
+                <tr>
+                    <th>CourseId</th>
+                    <th>Name</th>
+                    <th>Duration</th>
+                    <th>Fee/Term</th>
+                    <th>TeacherId</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="coursesTable"></tbody>
+        </table>
+    </div>
 
-<div id="teachers" class="section container">
-<h2>Teachers - CRUD</h2>
-<div class="form">
-<input id="t_teacherId" placeholder="TeacherId T001">
-<input id="t_name" placeholder="Name">
-<input id="t_email" placeholder="Email">
-<input id="t_subject" placeholder="Subject">
-<input id="t_phone" placeholder="Phone">
-<button class="btn-add" onclick="addTeacher()">Add / Update</button>
-<input type="hidden" id="t_editId">
-</div>
-<table><thead><tr><th>TeacherId</th><th>Name</th><th>Email</th><th>Subject</th><th>Phone</th><th>Actions</th></tr></thead><tbody id="teachersTable"></tbody></table>
-</div>
+    <!-- ========== PAYMENTS SECTION ========== -->
+    <div id="payments" class="section container">
+        <h2>Payments - CRUD</h2>
+        <!-- FORM - Where you type new payment -->
+        <div class="form">
+            <input id="p_paymentId" placeholder="PaymentId P001">
+            <!-- studentId links this payment to a student -->
+            <input id="p_studentId" placeholder="StudentId S001">
+            <input id="p_amount" type="number" placeholder="Amount">
+            <!-- type=date shows calendar picker -->
+            <input id="p_date" type="date">
+            <!-- Dropdown for payment method -->
+            <select id="p_method">
+                <option>Mobile Money</option>
+                <option>Bank</option>
+                <option>Cash</option>
+            </select>
+            <input id="p_receiptNo" placeholder="Receipt R1001">
+            <button class="btn-add" onclick="addPayment()">Add / Update</button>
+            <!-- NEW: Empty red box for payment errors -->
+            <div id="p_error" class="error-msg"></div>
+            <!-- Hidden box - stores MongoDB _id when editing -->
+            <input type="hidden" id="p_editId">
+        </div>
+        <!-- TABLE - Payments shown here by JS -->
+        <table>
+            <thead>
+                <tr>
+                    <th>PaymentId</th>
+                    <th>StudentId</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Method</th>
+                    <th>Receipt</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="paymentsTable"></tbody>
+        </table>
+    </div>
 
-<script>
-function showTab(name){
-document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-document.getElementById(name).classList.add('active');
-document.querySelectorAll('.tab').forEach(b=>{if(b.textContent.toLowerCase().includes(name)) b.classList.add('active')});
-loadAll();
-}
-async function fetchJSON(url,opts){const r=await fetch(url,opts);return r.json();}
-function val(id){return document.getElementById(id).value}
-function set(id,v){document.getElementById(id).value=v||''}
-async function loadStudents(){
-const data=await fetchJSON('/api/students');
-document.getElementById('studentsTable').innerHTML=data.map(d=>`<tr><td>${d.studentId||''}</td><td>${d.name||''}</td><td>${d.gender||''}</td><td>${d.email||''}</td><td>${d.courseId||''}</td><td>${d.totalFees||''}</td><td>${d.guardian? (d.guardian.name||'')+' '+(d.guardian.phone||''):''}</td><td><button class="btn-edit" onclick="editStudent('${d._id}')">Edit</button> <button class="btn-del" onclick="del('students','${d._id}')">Delete</button></td></tr>`).join('');
-window._students=data;
-}
-async function addStudent(){
-const body={studentId:val('s_studentId'),name:val('s_name'),gender:val('s_gender'),email:val('s_email'),courseId:val('s_courseId'),totalFees:Number(val('s_totalFees')),guardian:{name:val('s_guardianName'),phone:val('s_guardianPhone')}};
-const id=val('s_editId');
-if(id){await fetchJSON('/api/students/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}else{await fetchJSON('/api/students',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-['s_studentId','s_name','s_email','s_courseId','s_totalFees','s_guardianName','s_guardianPhone','s_editId'].forEach(i=>set(i,''));loadStudents();
-}
-function editStudent(id){const d=window._students.find(x=>x._id==id);set('s_studentId',d.studentId);set('s_name',d.name);set('s_gender',d.gender);set('s_email',d.email);set('s_courseId',d.courseId);set('s_totalFees',d.totalFees);set('s_guardianName',d.guardian?.name);set('s_guardianPhone',d.guardian?.phone);set('s_editId',d._id);}
+    <!-- ========== TEACHERS SECTION ========== -->
+    <div id="teachers" class="section container">
+        <h2>Teachers - CRUD</h2>
+        <!-- FORM - Where you type new teacher -->
+        <div class="form">
+            <input id="t_teacherId" placeholder="TeacherId T001">
+            <input id="t_name" placeholder="Name">
+            <input id="t_email" placeholder="Email">
+            <input id="t_subject" placeholder="Subject">
+            <input id="t_phone" placeholder="Phone">
+            <button class="btn-add" onclick="addTeacher()">Add / Update</button>
+            <!-- NEW: Empty red box for teacher errors -->
+            <div id="t_error" class="error-msg"></div>
+            <!-- Hidden box - stores MongoDB _id when editing -->
+            <input type="hidden" id="t_editId">
+        </div>
+        <!-- TABLE - Teachers shown here by JS -->
+        <table>
+            <thead>
+                <tr>
+                    <th>TeacherId</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Phone</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="teachersTable"></tbody>
+        </table>
+    </div>
 
-async function loadCourses(){
-const data=await fetchJSON('/api/courses');
-document.getElementById('coursesTable').innerHTML=data.map(d=>`<tr><td>${d.courseId}</td><td>${d.courseName}</td><td>${d.durationMonths}</td><td>${d.feePerTerm}</td><td>${d.teacherId}</td><td><button class="btn-edit" onclick="editCourse('${d._id}')">Edit</button> <button class="btn-del" onclick="del('courses','${d._id}')">Delete</button></td></tr>`).join('');
-window._courses=data;
-}
-async function addCourse(){
-const body={courseId:val('c_courseId'),courseName:val('c_courseName'),durationMonths:Number(val('c_durationMonths')),feePerTerm:Number(val('c_feePerTerm')),teacherId:val('c_teacherId')};
-const id=val('c_editId');if(id){await fetchJSON('/api/courses/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}else{await fetchJSON('/api/courses',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-['c_courseId','c_courseName','c_durationMonths','c_feePerTerm','c_teacherId','c_editId'].forEach(i=>set(i,''));loadCourses();
-}
-function editCourse(id){const d=window._courses.find(x=>x._id==id);set('c_courseId',d.courseId);set('c_courseName',d.courseName);set('c_durationMonths',d.durationMonths);set('c_feePerTerm',d.feePerTerm);set('c_teacherId',d.teacherId);set('c_editId',d._id);}
-
-async function loadPayments(){
-const data=await fetchJSON('/api/payments');
-document.getElementById('paymentsTable').innerHTML=data.map(d=>`<tr><td>${d.paymentId}</td><td>${d.studentId}</td><td>${d.amount}</td><td>${d.date}</td><td>${d.method}</td><td>${d.receiptNo}</td><td><button class="btn-edit" onclick="editPayment('${d._id}')">Edit</button> <button class="btn-del" onclick="del('payments','${d._id}')">Delete</button></td></tr>`).join('');
-window._payments=data;
-}
-async function addPayment(){
-const body={paymentId:val('p_paymentId'),studentId:val('p_studentId'),amount:Number(val('p_amount')),date:val('p_date'),method:val('p_method'),receiptNo:val('p_receiptNo')};
-const id=val('p_editId');if(id){await fetchJSON('/api/payments/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}else{await fetchJSON('/api/payments',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-['p_paymentId','p_studentId','p_amount','p_date','p_receiptNo','p_editId'].forEach(i=>set(i,''));loadPayments();
-}
-function editPayment(id){const d=window._payments.find(x=>x._id==id);set('p_paymentId',d.paymentId);set('p_studentId',d.studentId);set('p_amount',d.amount);set('p_date',d.date);set('p_method',d.method);set('p_receiptNo',d.receiptNo);set('p_editId',d._id);}
-
-async function loadTeachers(){
-const data=await fetchJSON('/api/teachers');
-document.getElementById('teachersTable').innerHTML=data.map(d=>`<tr><td>${d.teacherId}</td><td>${d.name}</td><td>${d.email}</td><td>${d.subject}</td><td>${d.phone}</td><td><button class="btn-edit" onclick="editTeacher('${d._id}')">Edit</button> <button class="btn-del" onclick="del('teachers','${d._id}')">Delete</button></td></tr>`).join('');
-window._teachers=data;
-}
-async function addTeacher(){
-const body={teacherId:val('t_teacherId'),name:val('t_name'),email:val('t_email'),subject:val('t_subject'),phone:val('t_phone')};
-const id=val('t_editId');if(id){await fetchJSON('/api/teachers/'+id,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}else{await fetchJSON('/api/teachers',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});}
-['t_teacherId','t_name','t_email','t_subject','t_phone','t_editId'].forEach(i=>set(i,''));loadTeachers();
-}
-function editTeacher(id){const d=window._teachers.find(x=>x._id==id);set('t_teacherId',d.teacherId);set('t_name',d.name);set('t_email',d.email);set('t_subject',d.subject);set('t_phone',d.phone);set('t_editId',d._id);}
-
-async function del(col,id){if(!confirm('Delete?'))return;await fetchJSON('/api/'+col+'/'+id,{method:'DELETE'});loadAll();}
-function loadAll(){loadStudents();loadCourses();loadPayments();loadTeachers();}
-loadAll();
-</script>
+<!-- Link to JS file - all logic is there -->
+<script src="script.js"></script>
 </body>
 </html>
