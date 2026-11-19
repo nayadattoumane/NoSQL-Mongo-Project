@@ -187,12 +187,29 @@ async function addPayment() {
     if(isEmpty(val('p_studentId'))) { showError('p_error', "StudentId is required. Please fill it."); return; }
     if(isEmpty(val('p_amount'))) { showError('p_error', "Amount is required. Please fill it."); return; }
     if(isEmpty(val('p_date'))) { showError('p_error', "Date is required. Please fill it."); return; }
-    if(isEmpty(val('p_receiptNo'))) { showError('p_error', "Receipt No is required. Please fill it."); return; }
+    // DELETED: Receipt No validation - now auto-generated, don't check it
     // NEW: Amount must be more than 0
     if(Number(val('p_amount')) <= 0) { showError('p_error', "Amount must be more than 0."); return; }
+
+    const id = val('p_editId');
+
+    // NEW: Auto receipt - R1001, R1002, R1003...
+    let receiptToUse;
+    if(id){
+        // Editing - keep the old receipt, don't make a new one
+        receiptToUse = val('p_receiptNo');
+    } else {
+        // New payment - find highest receipt and +1
+        let maxNum = 1000;
+        (window._payments || []).forEach(p => {
+            let num = parseInt(String(p.receiptNo).replace('R',''));
+            if(num > maxNum) maxNum = num;
+        });
+        receiptToUse = 'R' + (maxNum + 1);
+    }
+
     // If we reach here, all required fields are filled
-    const body={paymentId:val('p_paymentId'),studentId:val('p_studentId'),amount:Number(val('p_amount')),date:val('p_date'),method:val('p_method'),receiptNo:val('p_receiptNo')};
-    const id=val('p_editId');
+    const body={paymentId:val('p_paymentId'),studentId:val('p_studentId'),amount:Number(val('p_amount')),date:val('p_date'),method:val('p_method'),receiptNo:receiptToUse};
     let ok;
     // Show payment errors in 'p_error' red box
     if(id){ ok = await saveJSON('/api/payments/'+id, 'PUT', body, 'p_error'); }else{ ok = await saveJSON('/api/payments', 'POST', body, 'p_error'); }
