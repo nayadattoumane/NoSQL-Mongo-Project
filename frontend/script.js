@@ -67,6 +67,15 @@ async function saveJSON(url, method, body, errorId) {
     return true;
 }
 
+// NEW: Check if a value is empty (user typed nothing, or only spaces)
+// Example: isEmpty("") = true, isEmpty("   ") = true, isEmpty("S001") = false
+function isEmpty(value) {
+    // !value = null / undefined / empty string
+    // .trim() removes spaces, so "   " also counts as empty
+    // toString() is safety so Number values don't crash
+    return !value || value.toString().trim() === '';
+}
+
 // Get value from an input box by its id. Example: val('s_name') = what user typed in Name
 function val(id) {
         return document.getElementById(id).value
@@ -90,6 +99,18 @@ async function loadStudents() {
 
 // CREATE or UPDATE: Called when Add / Update button is clicked
 async function addStudent() {
+    // NEW: Clear old error first, so we show only the fresh message
+    clearError('s_error');
+    // NEW: VALIDATION - Stop if required fields are empty, show red error, DON'T send to backend
+    // We check one by one so user knows exactly which field is missing
+    if(isEmpty(val('s_studentId'))) { showError('s_error', "StudentId is required. Please fill it."); return; }
+    if(isEmpty(val('s_name'))) { showError('s_error', "Name is required. Please fill it."); return; }
+    if(isEmpty(val('s_email'))) { showError('s_error', "Email is required. Please fill it."); return; }
+    if(isEmpty(val('s_courseId'))) { showError('s_error', "CourseId is required. Please fill it."); return; }
+    if(isEmpty(val('s_totalFees'))) { showError('s_error', "Total Fees is required. Please fill it."); return; }
+    // NEW: Total Fees must be a number bigger than 0, not 0 or negative
+    if(Number(val('s_totalFees')) <= 0) { showError('s_error', "Total Fees must be more than 0."); return; }
+    // If we reach here, all required fields are filled, continue as before...
     // Collect all inputs into one object to send to backend
     const body={studentId:val('s_studentId'),name:val('s_name'),gender:val('s_gender'),email:val('s_email'),courseId:val('s_courseId'),totalFees:Number(val('s_totalFees')),guardian:{name:val('s_guardianName'),phone:val('s_guardianPhone')}};
     // Check hidden box - if it has an id, we are editing, if empty we are adding new
@@ -120,6 +141,18 @@ async function loadCourses() {
 
 // CREATE or UPDATE: Add new course or update existing one
 async function addCourse() {
+    // NEW: Clear old error first
+    clearError('c_error');
+    // NEW: VALIDATION - Stop if required fields are empty
+    if(isEmpty(val('c_courseId'))) { showError('c_error', "CourseId is required. Please fill it."); return; }
+    if(isEmpty(val('c_courseName'))) { showError('c_error', "Course Name is required. Please fill it."); return; }
+    if(isEmpty(val('c_durationMonths'))) { showError('c_error', "Duration Months is required. Please fill it."); return; }
+    if(isEmpty(val('c_feePerTerm'))) { showError('c_error', "Fee Per Term is required. Please fill it."); return; }
+    if(isEmpty(val('c_teacherId'))) { showError('c_error', "TeacherId is required. Please fill it."); return; }
+    // NEW: Numbers must be more than 0
+    if(Number(val('c_durationMonths')) <= 0) { showError('c_error', "Duration Months must be more than 0."); return; }
+    if(Number(val('c_feePerTerm')) <= 0) { showError('c_error', "Fee Per Term must be more than 0."); return; }
+    // If we reach here, all required fields are filled
     const body={courseId:val('c_courseId'),courseName:val('c_courseName'),durationMonths:Number(val('c_durationMonths')),feePerTerm:Number(val('c_feePerTerm')),teacherId:val('c_teacherId')};
     const id=val('c_editId');
     let ok;
@@ -147,6 +180,17 @@ async function loadPayments() {
 
 // CREATE or UPDATE: Add new payment or update existing one
 async function addPayment() {
+    // NEW: Clear old error first
+    clearError('p_error');
+    // NEW: VALIDATION - Stop if required fields are empty
+    if(isEmpty(val('p_paymentId'))) { showError('p_error', "PaymentId is required. Please fill it."); return; }
+    if(isEmpty(val('p_studentId'))) { showError('p_error', "StudentId is required. Please fill it."); return; }
+    if(isEmpty(val('p_amount'))) { showError('p_error', "Amount is required. Please fill it."); return; }
+    if(isEmpty(val('p_date'))) { showError('p_error', "Date is required. Please fill it."); return; }
+    if(isEmpty(val('p_receiptNo'))) { showError('p_error', "Receipt No is required. Please fill it."); return; }
+    // NEW: Amount must be more than 0
+    if(Number(val('p_amount')) <= 0) { showError('p_error', "Amount must be more than 0."); return; }
+    // If we reach here, all required fields are filled
     const body={paymentId:val('p_paymentId'),studentId:val('p_studentId'),amount:Number(val('p_amount')),date:val('p_date'),method:val('p_method'),receiptNo:val('p_receiptNo')};
     const id=val('p_editId');
     let ok;
@@ -174,6 +218,15 @@ async function loadTeachers() {
 
 // CREATE or UPDATE: Add new teacher or update existing one
 async function addTeacher() {
+    // NEW: Clear old error first
+    clearError('t_error');
+    // NEW: VALIDATION - Stop if required fields are empty
+    if(isEmpty(val('t_teacherId'))) { showError('t_error', "TeacherId is required. Please fill it."); return; }
+    if(isEmpty(val('t_name'))) { showError('t_error', "Name is required. Please fill it."); return; }
+    if(isEmpty(val('t_email'))) { showError('t_error', "Email is required. Please fill it."); return; }
+    if(isEmpty(val('t_subject'))) { showError('t_error', "Subject is required. Please fill it."); return; }
+    if(isEmpty(val('t_phone'))) { showError('t_error', "Phone is required. Please fill it."); return; }
+    // If we reach here, all required fields are filled
     const body={teacherId:val('t_teacherId'),name:val('t_name'),email:val('t_email'),subject:val('t_subject'),phone:val('t_phone')};
     const id=val('t_editId');
     let ok;

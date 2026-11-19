@@ -75,6 +75,51 @@ function getFriendlyError(err, idField) {
   return err.message || 'Something went wrong. Please try again.';
 }
 
+// ========== NEW HELPER - Check if a linked ID really exists ==========
+// This is the PERMANENT FIX for orphans.
+// Example: checkExists(Course, 'courseId', 'C008') -> false if C008 does not exist
+// We use this BEFORE saving, so we never save a student with a fake courseId.
+async function checkExists(Model, field, value) {
+  // If value is empty, let the other validation handle it - return true so we don't show wrong message here
+  if (!value) return true;
+  // findOne returns the document if found, null if not found
+  const found = await Model.findOne({ [field]: value });
+  // !! turns it into true/false: found = true, null = false
+  return !!found;
+}
+
+// ========== NEW HELPER - Check all links for one collection ==========
+// Returns an error message string if a link is broken, or null if all links are OK
+// body = what user typed in the form, e.g. { studentId: 'S010', courseId: 'C008' }
+// name = which collection we are saving to: 'students', 'courses', 'payments', 'teachers'
+async function checkLinks(name, body) {
+  // STUDENTS: courseId must exist in Courses
+  if (name === 'students') {
+    // Ask MongoDB: Does course C008 exist?
+    const ok = await checkExists(Course, 'courseId', body.courseId);
+    // If NOT, return friendly message to show in red box
+    if (!ok) return `Course '${body.courseId}' does not exist. Please add the course first or use a valid CourseId.`;
+  }
+
+  // COURSES: teacherId must exist in Teachers
+  if (name === 'courses') {
+    // Ask MongoDB: Does teacher T999 exist?
+    const ok = await checkExists(Teacher, 'teacherId', body.teacherId);
+    if (!ok) return `Teacher '${body.teacherId}' does not exist. Please add the teacher first or use a valid TeacherId.`;
+  }
+
+  // PAYMENTS: studentId must exist in Students
+  if (name === 'payments') {
+    // Ask MongoDB: Does student S999 exist?
+    const ok = await checkExists(Student, 'studentId', body.studentId);
+    if (!ok) return `Student '${body.studentId}' does not exist. Please add the student first or use a valid StudentId.`;
+  }
+
+  // TEACHERS: points to nobody, so no check needed
+  // If we reach here, all links are OK (or no links to check)
+  return null;
+}
+
 // ========== CRUD - One function makes all routes ==========
 // Instead of writing 16 routes, we write 1 function and reuse it 4 times
 
@@ -86,6 +131,13 @@ function makeCRUD(model, name, idField) {
   // try/catch = if ID already exists, send error instead of crashing
   app.post(`/api/${name}`, async (req,res)=>{ 
     try { 
+      // NEW: PERMANENT FIX - Check links BEFORE saving
+      // If user typed C008 which doesn't exist, linkError will be a message, not null
+      const linkError = await checkLinks(name, req.body);
+      // If linkError exists, BLOCK the save and send 400 + friendly message
+      // Frontend will show this in the red box, and will NOT clear the form
+      if (linkError) return res.status(400).json({ message: linkError, error: linkError });
+      // If linkError is null, all links are OK, save normally
       const doc = new model(req.body); 
       await doc.save(); 
       res.json(doc); 
@@ -101,6 +153,10 @@ function makeCRUD(model, name, idField) {
   // {new:true} means return the updated version, not the old one
   app.put(`/api/${name}/:id`, async (req,res)=>{ 
     try { 
+      // NEW: PERMANENT FIX AGAIN - Must check in PUT too!
+      // Otherwise user can ADD with a good course, then EDIT it to a fake course C008
+      const linkError = await checkLinks(name, req.body);
+      if (linkError) return res.status(400).json({ message: linkError, error: linkError });
       const updated = await model.findByIdAndUpdate(req.params.id, req.body, {new:true, runValidators:true}); 
       res.json(updated); 
     }
